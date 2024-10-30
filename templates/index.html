@@ -120,11 +120,8 @@
         </div>
         <div class="offcanvas-body">
             <div class="chat-box" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
-                <p>Kullanıcı 1: Merhaba!</p>
-                <p>Kullanıcı 2: Merhaba, nasılsın?</p>
-                <!-- Daha fazla mesaj... -->
               </div>
-              <form action="send_message" method="post" >
+ 
 
             <div class="input-group mb-2">
                 <span class="input-group-text" id="basic-addon1"><button  type="button" class="btn"> 
@@ -135,8 +132,8 @@
                   />
                 </button>
                 </span>
-                <input type="text" class="form-control" placeholder="" aria-label="Username" aria-describedby="basic-addon1">
-                <button class="btn btn-outline-secondary" type="submit  " id="button-addon2">
+                <input type="text" class="form-control ai-input " placeholder="" aria-label="Username" aria-describedby="basic-addon1">
+                <button class="btn btn-outline-secondary aibtn" type="submit  " id="button-addon2">
                   <img
                     src="/static/icons/send.svg"
                     width="20"
@@ -144,7 +141,7 @@
                   />
                 </button>
               </div>
-            </form>
+
 
         </div>
       </div>
@@ -154,7 +151,7 @@
     <div>
      <img src="/static/icons/dollar-sign.svg" class="rounded mx-auto d-block" alt="..." width="50" height="50">
      <br>
-     <p class="text-center">User Name</p>
+     <p class="text-center">Merhaba : {{username|title}}</p>
     </div>
     <div class="container-sm w-25 p-3 ">
      <table class="table">
@@ -166,8 +163,8 @@
         </thead>
         <tbody>
             <tr>
-                <th scope="col" class=" text-center">Bakiye</th>
-                <th scope="col" class=" text-center">12301030</th>
+                <th scope="col" class=" text-center">Bakiye :</th>
+                <th scope="col" class=" text-center"></th>
             </tr>
             <tr>
                 <th colspan="2" class="text-center"><button type="button " data-bs-toggle="offcanvas" class="btn btn-secondary"  data-bs-target="#havalecanvas" aria-controls="havalecanvas">Havale</button></th>
@@ -192,5 +189,6 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <script src="/static/js/aisec.js"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 
 document.addEventListener("DOMContentLoaded", function() {
-    const inputField = document.querySelector(".form-control");
+    const inputField = document.querySelector(".ai-input");
     const chatBox = document.querySelector(".chat-box");
 
     function addMessage(role, message) {
@@ -10,10 +10,9 @@ document.addEventListener("DOMContentLoaded", function() {
         chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
     }
 
-    document.querySelector(".btn").addEventListener("click", async function() {
+    document.querySelector(".aibtn").addEventListener("click", async function() {
         const userMessage = inputField.value.trim();
         if (!userMessage) return;
-
         addMessage("Kullanıcı", userMessage);
         inputField.value = "";
 
@@ -29,7 +28,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
             if (response.ok) {
                 const data = await response.json();
-                addMessage("AI Asistan", data.response);
+                jsonData = JSON.parse(data)
+                addMessage("AI Asistan", jsonData.response);
             } else {
                 addMessage("AI Asistan", "Yanıt alınamadı.");
             }
