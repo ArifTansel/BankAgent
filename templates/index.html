@@ -44,9 +44,17 @@
             <li class="nav-item " data-bs-toggle="offcanvas"  data-bs-target="#aicanvas" role="button" aria-controls="offcanvasExample">
                 <a class="nav-link text-dark " aria-current="page" href="#">AI Asistant</a>
             </li>
+          {%if username == None %}
+
             <li class="nav-item " data-bs-toggle="offcanvas"  data-bs-target="#logincanvas" role="button" aria-controls="offcanvasExample">
                 <a class="nav-link " aria-current="page" href="#">Giriş Yap</a>
             </li>
+          {%else%}
+          <li class="nav-item " role="button">
+            <a class="nav-link text-danger " aria-current="page" href="/logout" >Çıkış Yap</a>
+          </li>
+          {%endif%}
+
           </ul>
         </div>
 
@@ -59,6 +67,7 @@
         <div class="offcanvas-header">
           <h5 class="offcanvas-title" id="offcanvasLabel">Giriş Yap</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+
         </div>
         <div class="offcanvas-body">
             <!-- Giriş Yap -->
