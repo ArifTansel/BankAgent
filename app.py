@@ -99,20 +99,20 @@ def sendMessage():
             cursor.execute('SELECT userMessage FROM messages WHERE userid = ( SELECT id from users WHERE username=(%s))',(session['username'],))
             result = cursor.fetchall()
 
-        data = {
-            "model": "llama3.1:8b",
-            "stream": False,
-            "messages": result
-        }
+    data = {
+        "model": "llama3.1:8b",
+        "stream": False,
+        "messages": result
+    }
         
-        response = requests.post("http://localhost:11434/api/chat", json=data)
+    response = requests.post("http://localhost:11434/api/chat", json=data)
+    with connection : 
         with connection.cursor as cursor :
             cursor.execute('INSERT INTO messages (userid,content,role) VALUES (1,(%s),user)',(message,))
-            cursor.commit()
             data = json.loads(response.text)
             cursor.execute('INSERT INTO messages (userid,content,role) VALUES (1,(%s),asistant)',(data.message.content,))
-        rp = json.dumps(response.text)
-
+        connection.commit()
+    rp = json.dumps(response.text)
     return rp
 
 @app.route("/logout")
