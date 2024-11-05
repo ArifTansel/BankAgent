@@ -1,4 +1,3 @@
-
 document.addEventListener("DOMContentLoaded", function() {
     const inputField = document.querySelector(".ai-input");
     const chatBox = document.querySelector(".chat-box");
