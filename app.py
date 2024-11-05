@@ -87,6 +87,7 @@ def sendMessage():
         ]
     }
     response = requests.post("http://localhost:11434/api/chat", json=data)
+    print(response.text)
     rp = json.dumps(response.text)
     return rp
 
