@@ -1,3 +1,4 @@
+const { connect } = require("socket.io-client");
 
 document.addEventListener("DOMContentLoaded", function() {
     const inputField = document.querySelector(".ai-input");
@@ -5,14 +6,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function addMessage(role, message) {
         const messageElem = document.createElement("p");
-        messageElem.textContent = `${role}: ${message}`;
+        messageElem.textContent = `${role}: ${message.content}`;
         chatBox.appendChild(messageElem);
         chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
     }
 
     document.querySelector(".aibtn").addEventListener("click", async function() {
-        const userMessage = inputField.value.trim();
-        if (!userMessage) return;
+        var userMessage = {
+            'content' : ''
+        }
+        userMessage.content = inputField.value.trim();
+        if (!userMessage.content) return;
         addMessage("Kullanıcı", userMessage);
         inputField.value = "";
 
@@ -29,9 +33,9 @@ document.addEventListener("DOMContentLoaded", function() {
             if (response.ok) {
                 const data = await response.json();
                 jsonData = JSON.parse(data)
-                addMessage("AI Asistan", jsonData.response);
+                addMessage("AI Asistan", jsonData.message);
             } else {
-                addMessage("AI Asistan", "Yanıt alınamadı.");
+                addMessage("AI Asistan", {'content' : 'mesaj alınamadı'});
             }
         } catch (error) {
             console.error("Hata:", error);

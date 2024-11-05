@@ -1,14 +1,13 @@
 from flask import Flask, render_template, session, redirect, url_for, request
-from flask_mysql_connector import MySQL
+
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 import json
 app = Flask(__name__)
 
 app.config['MYSQL_USER'] = "root"
-app.config['MYSQL_PASSWORD'] = 'patatoes'
+app.config['MYSQL_PASSWORD'] = 'root'
 app.config['MYSQL_DATABASE'] = "aisec"
-mysql = MySQL(app)
 
 app.secret_key = 'THIS_IS_BAD'
 
@@ -79,10 +78,15 @@ def sendMessage():
     message = prompt["message"]
     data = {
         "model": "llama3.1:8b",
-        "prompt": message,
-        "stream": False
+        "stream": False,
+        "messages":[
+            {
+                'role':'user',
+                'content': message
+            }
+        ]
     }
-    response = requests.post("http://localhost:11434/api/generate", json=data)
+    response = requests.post("http://localhost:11434/api/chat", json=data)
     rp = json.dumps(response.text)
     return rp
 
