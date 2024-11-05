@@ -1,5 +1,3 @@
-const { connect } = require("socket.io-client");
-
 document.addEventListener("DOMContentLoaded", function() {
     const inputField = document.querySelector(".ai-input");
     const chatBox = document.querySelector(".chat-box");
@@ -27,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ message: userMessage })
+                body: JSON.stringify({ message: userMessage.content })
             });
 
             if (response.ok) {
