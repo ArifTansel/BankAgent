@@ -44,7 +44,7 @@
             <li class="nav-item " data-bs-toggle="offcanvas"  data-bs-target="#aicanvas" role="button" aria-controls="offcanvasExample">
                 <a class="nav-link text-dark " aria-current="page" href="#">AI Asistant</a>
             </li>
-          {%if username == None %}
+          {%if user_info == None %}
 
             <li class="nav-item " data-bs-toggle="offcanvas"  data-bs-target="#logincanvas" role="button" aria-controls="offcanvasExample">
                 <a class="nav-link " aria-current="page" href="#">Giriş Yap</a>
@@ -156,11 +156,11 @@
       </div>
 
   <!-- Profile bilgileri -->
-  {%if username %}
+  {%if user_info !=None %}
     <div>
      <img src="/static/icons/dollar-sign.svg" class="rounded mx-auto d-block" alt="..." width="50" height="50">
      <br>
-     <p class="text-center">Merhaba : {{username|title}}</p>
+     <p class="text-center">Merhaba : {{user_info["username"]|title}}</p>
     </div>
     <div class="container-sm w-25 p-3 ">
      <table class="table">
@@ -172,7 +172,7 @@
         </thead>
         <tbody>
             <tr>
-                <th scope="col" class=" text-center">Bakiye :</th>
+                <th scope="col" class=" text-center">Bakiye : {{account_info["balance"]}} </th>
                 <th scope="col" class=" text-center"></th>
             </tr>
             <tr>

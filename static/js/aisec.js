@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // API'ye mesaj gönder
         try {
+            inputField.disabled = true;
             const response = await fetch("/send_message", {
                 method: "POST",
                 headers: {
@@ -32,10 +33,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 const data = await response.json();
                 jsonData = JSON.parse(data)
                 addMessage("AI Asistan", jsonData.message);
-            } else {
+                inputField.disabled = false ;
+            } 
+            else {
+
                 addMessage("AI Asistan", {'content' : 'mesaj alınamadı'});
+                inputField.disabled = false;
             }
         } catch (error) {
+            inputField.disabled = false;
+
             console.error("Hata:", error);
             addMessage("AI Asistan", "Bir hata oluştu.");
         }

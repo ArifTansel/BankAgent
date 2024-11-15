@@ -6,21 +6,16 @@ import json
 app = Flask(__name__)
 
 
-
-    # with connection:
-    #     with connection.cursor() as cursor:
-    #             sql = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
-    #             cursor.execute(sql, ('arif', 'asd@gmial.com','patatoes'))
-        # connection.commit()
-app.config['MYSQL_USER'] = "root"
-app.config['MYSQL_PASSWORD'] = 'root'
-app.config['MYSQL_DATABASE'] = "aisec"
-
+#connection
+#     with connection.cursor() as cursor:
+#             sql = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
+#             cursor.execute(sql, ('arif', 'asd@gmial.com','patatoes'))
+    # connection.commit()
 app.secret_key = 'THIS_IS_BAD'
 
 connection = pymysql.connect(host='localhost',
                              user='root',
-                             password='root',
+                             password='Root',
                              database='aisec',
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
@@ -30,29 +25,48 @@ connection = pymysql.connect(host='localhost',
 @app.route("/")
 def index():
     username = session.get("username", None)
-    error = session.get("is_error", False)
+    error = session.get("is_error" , False)
     is_used = session.get("is_used", False)
+    user_info = None
+    account_info = None
+    #fetch user information
+    if username != None : 
+        connection 
+        with connection.cursor() as cursor :
+            cursor.execute(" SELECT * FROM users WHERE username= (%s)",(username,))
+            user_info= cursor.fetchone() 
+        print(user_info)
+        with connection.cursor() as cursor :
+            cursor.execute(" SELECT balance FROM account_info WHERE user_id=(SELECT user_id FROM users WHERE username =(%s))",(username,))
+            account_info = cursor.fetchone() 
 
     is_wrong = session.get("is_wrong", False)
-    return render_template("index.html", username=username, is_error=error, is_used=is_used, is_wrong=is_wrong)
+    return render_template("index.html", user_info=user_info, account_info = account_info ,is_error=error, is_used=is_used, is_wrong=is_wrong)
 
 
 @app.route("/signup", methods=['POST'])
 def signUp():
     session["is_used"] = False
     try:
-        cursor = mysql.connection.cursor()
-        username = request.form.get("username").strip().casefold()
-        mail = request.form.get("email").strip()
-        password = request.form.get("password").strip()
-        hashed_password = generate_password_hash(password)
-        cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
+        connection 
+        with connection.cursor() as cursor :
+
+            username = request.form.get("username").strip().casefold()
+            mail = request.form.get("email").strip()
+            password = request.form.get("password").strip()
+            hashed_password = generate_password_hash(password)
+            cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
                        (username, mail, hashed_password))
-        mysql.connection.commit()
-        cursor.close()
-        session["is_used"] = False
+            session["is_used"] = False
+            cursor.execute("INSERT INTO account_info (user_id,balance) VALUES ((SELECT user_id FROM users WHERE username=(%s)),100)",(username,))
+        
+        connection.commit()
+        print("kayıt olundu")
+        return redirect(url_for('index'))
 
     except:
+        print("kayıt olunamadı")
+
         session["is_used"] = True
         return redirect(url_for('index'))
 
@@ -60,18 +74,19 @@ def signUp():
 @app.route("/login", methods=['POST'])
 def login():
     try:
-        cursor = mysql.connection.cursor()
-        username = request.form.get("username").strip().casefold()
-        password = request.form.get("password").strip()
-        cursor.execute(
-            "SELECT password FROM users WHERE username=(%s)", (username,))
-        result = cursor.fetchone()
-        cursor.close()
+        connection 
+        with connection.cursor() as cursor :
+
+            username = request.form.get("username").strip().casefold()
+            password = request.form.get("password").strip()
+            cursor.execute(
+                "SELECT password FROM users WHERE username=(%s)", (username,))
+            result = cursor.fetchone()
         if result is None:  # kullanıcı adı bulunamadı
             session["is_wrong"] = True
             return redirect(url_for("index"))
 
-        if check_password_hash(result[0], password):
+        if check_password_hash(result["password"], password):
             print("şifre doğru :", username)
             session["is_used"] = False
             session["is_wrong"] = False
@@ -83,36 +98,37 @@ def login():
             cursor.close()
             return redirect(url_for("index"))
     except:
-        print("hata")
         session["is_error"] = True
         return redirect(url_for("index"))
 
 
 @app.route("/send_message", methods=["POST"])
 def sendMessage():
-    session['username'] = 'arif'
+    
+    session['username'] = 'Arif'
     prompt = request.get_json()
     message = prompt["message"]
 
-    with connection : 
-        with connection.cursor as cursor : 
-            cursor.execute('SELECT userMessage FROM messages WHERE userid = ( SELECT id from users WHERE username=(%s))',(session['username'],))
-            result = cursor.fetchall()
+    connection
+    with connection.cursor() as cursor : 
+        cursor.execute("INSERT INTO messages (userid,content,role) VALUES (1,(%s),'user')",(message,))
+        cursor.execute('SELECT role,content FROM messages WHERE userid = ( SELECT id from users WHERE username=(%s))',(session['username'],))
+        result = cursor.fetchall()
 
-        data = {
-            "model": "llama3.1:8b",
-            "stream": False,
-            "messages": result
-        }
+    data = {
+        "model": "llama3.1:8b",
+        "stream": False,
+        "messages": result
+    }
+    response = requests.post("http://localhost:11434/api/chat", json=data)
+
+    print(response.text)
+    with connection.cursor() as cursor :
         
-        response = requests.post("http://localhost:11434/api/chat", json=data)
-        with connection.cursor as cursor :
-            cursor.execute('INSERT INTO messages (userid,content,role) VALUES (1,(%s),user)',(message,))
-            cursor.commit()
-            data = json.loads(response.text)
-            cursor.execute('INSERT INTO messages (userid,content,role) VALUES (1,(%s),asistant)',(data.message.content,))
-        rp = json.dumps(response.text)
-
+        data = json.loads(response.text)
+        cursor.execute("INSERT INTO messages (userid,content,role) VALUES (1,(%s),'assistant')",(data['message']['content'],))
+    rp = json.dumps(response.text)
+    connection.commit()
     return rp
 
 @app.route("/logout")
@@ -122,4 +138,5 @@ def logout():
 
 if __name__ == "__main__":
     app.debug = True
+    
     app.run()
