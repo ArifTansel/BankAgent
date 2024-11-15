@@ -120,15 +120,15 @@ def sendMessage():
         "stream": False,
         "messages": result
     }
-    response = requests.post("http://localhost:11434/api/chat", json=data)
-
-    print(response.text)
-    with connection.cursor() as cursor :
         
-        data = json.loads(response.text)
-        cursor.execute("INSERT INTO messages (userid,content,role) VALUES (1,(%s),'assistant')",(data['message']['content'],))
+    response = requests.post("http://localhost:11434/api/chat", json=data)
+    with connection : 
+        with connection.cursor as cursor :
+            cursor.execute('INSERT INTO messages (userid,content,role) VALUES (1,(%s),user)',(message,))
+            data = json.loads(response.text)
+            cursor.execute('INSERT INTO messages (userid,content,role) VALUES (1,(%s),asistant)',(data.message.content,))
+        connection.commit()
     rp = json.dumps(response.text)
-    connection.commit()
     return rp
 
 @app.route("/logout")
