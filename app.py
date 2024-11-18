@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 app = Flask(__name__)
 
-
+#send message daki user id kısmını ayarla
 #connection
 #     with connection.cursor() as cursor:
 #             sql = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
@@ -41,9 +41,9 @@ def index():
         if user_info is not None :
             session["user_information"] = user_info
              
-        with connection.cursor() as cursor :
-            cursor.execute(" SELECT balance FROM account_info WHERE user_id=(%s)",(user_info["id"],))
-            account_info = cursor.fetchone() 
+            with connection.cursor() as cursor :
+                cursor.execute(" SELECT balance FROM account_info WHERE user_id=(%s)",(user_info["id"],))
+                account_info = cursor.fetchone() 
 
     is_wrong = session.get("is_wrong", False)
     return render_template("index.html", user_info=user_info, account_info = account_info ,is_error=error, is_used=is_used, is_wrong=is_wrong)
@@ -150,31 +150,31 @@ def transform() :
 
 @app.route("/send_message", methods=["POST"])
 def sendMessage():
-    
-    session['username'] = 'Arif' # change
     prompt = request.get_json()
     message = prompt["message"]
 
     connection
     with connection.cursor() as cursor : 
         cursor.execute("INSERT INTO messages (user_id,content,role) VALUES (1,(%s),'user')",(message,))
-        cursor.execute('SELECT role,content FROM messages WHERE user_id = ( SELECT id from users WHERE username=(%s))',(session['username'],))
+        cursor.execute('SELECT role,content FROM messages WHERE user_id = 1') # düzelt
         result = cursor.fetchall()
 
     data = {
         "model": "llama3.1:8b",
         "stream": False,
         "messages": result
-    }
+    }  
+    print("----------------------->" ,data)
         
     response = requests.post("http://localhost:11434/api/chat", json=data)
-    with connection : 
-        with connection.cursor as cursor :
-            cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),user)',(message,))
-            data = json.loads(response.text)
-            cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),asistant)',(data.message.content,))
-        connection.commit()
+    connection 
+    with connection.cursor() as cursor :
+        cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),(%s))',(message,"user"))
+        data = json.loads(response.text)
+        cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),(%s))',(data["message"]["content"],"assistant"))
+    connection.commit()
     rp = json.dumps(response.text)
+    
     return rp
 
 @app.route("/logout")

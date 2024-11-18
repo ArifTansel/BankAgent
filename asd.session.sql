@@ -13,8 +13,7 @@ CREATE TABLE users
   SELECT * FROM users WHERE username='asd'
   --@block
 CREATE TABLE messages (
-  user_id INT , 
-    Foreign KEY (user_id) REferences users(id),
+    user_id INT , 
     role VARCHAR(20),
     content TEXT 
 )
@@ -34,7 +33,7 @@ CREATE TABLE transformation_log(
 )
 
 --@block
-DELETE from transformation_log
+drop TABLE messages
 
 --@block 
 INSERT INTO messages (userid,content,role) VALUES (1,'you are asisstant that translate messages to french','system')
