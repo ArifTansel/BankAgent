@@ -16,7 +16,7 @@ app.secret_key = 'THIS_IS_BAD'
 
 connection = pymysql.connect(host='localhost',
                              user='root',
-                             password='Root',
+                             password='root',
                              database='aisec',
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
