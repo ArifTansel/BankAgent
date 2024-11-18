@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const inputField = document.querySelector(".ai-input");
     const chatBox = document.querySelector(".chat-box");
 
@@ -9,9 +9,9 @@ document.addEventListener("DOMContentLoaded", function() {
         chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
     }
 
-    document.querySelector(".aibtn").addEventListener("click", async function() {
+    document.querySelector(".aibtn").addEventListener("click", async function () {
         var userMessage = {
-            'content' : ''
+            'content': ''
         }
         userMessage.content = inputField.value.trim();
         if (!userMessage.content) return;
@@ -33,11 +33,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 const data = await response.json();
                 jsonData = JSON.parse(data)
                 addMessage("AI Asistan", jsonData.message);
-                inputField.disabled = false ;
-            } 
+                inputField.disabled = false;
+            }
             else {
 
-                addMessage("AI Asistan", {'content' : 'mesaj alınamadı'});
+                addMessage("AI Asistan", { 'content': 'mesaj alınamadı' });
                 inputField.disabled = false;
             }
         } catch (error) {
@@ -47,4 +47,36 @@ document.addEventListener("DOMContentLoaded", function() {
             addMessage("AI Asistan", "Bir hata oluştu.");
         }
     });
+});
+document.addEventListener("DOMContentLoaded", function () {
+    receiverInputField = document.querySelector("#receiver_name");
+    amountInputField = document.querySelector("#amount");
+
+    document.querySelector("#transmission_submit").addEventListener("click", async function () {
+        console.log("transmission")
+        receiverName = receiverInputField.value.trim()
+        amountInput = parseInt(amountInputField.value.trim())
+        if (Number.isInteger((amountInput))) {
+            try {
+                const response = await fetch("/transform", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ receiver_name: receiverName, amount: amountInput })
+                });
+                console.log("fetching....")
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("transition completed");
+                    receiverInputField.value = ""
+                    amountInputField.value = ""
+                }
+
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        
+    })
 });

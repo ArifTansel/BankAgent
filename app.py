@@ -3,6 +3,7 @@ import pymysql.cursors
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 import json
+from datetime import datetime
 app = Flask(__name__)
 
 
@@ -36,8 +37,12 @@ def index():
             cursor.execute(" SELECT * FROM users WHERE username= (%s)",(username,))
             user_info= cursor.fetchone() 
         print(user_info)
+        
+        if user_info is not None :
+            session["user_information"] = user_info
+             
         with connection.cursor() as cursor :
-            cursor.execute(" SELECT balance FROM account_info WHERE user_id=(SELECT user_id FROM users WHERE username =(%s))",(username,))
+            cursor.execute(" SELECT balance FROM account_info WHERE user_id=(%s)",(user_info["id"],))
             account_info = cursor.fetchone() 
 
     is_wrong = session.get("is_wrong", False)
@@ -58,7 +63,7 @@ def signUp():
             cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
                        (username, mail, hashed_password))
             session["is_used"] = False
-            cursor.execute("INSERT INTO account_info (user_id,balance) VALUES ((SELECT user_id FROM users WHERE username=(%s)),100)",(username,))
+            cursor.execute("INSERT INTO account_info (user_id,balance) VALUES ((SELECT id FROM users WHERE username=(%s)),100)",(username,))
         
         connection.commit()
         print("kayıt olundu")
@@ -102,17 +107,58 @@ def login():
         return redirect(url_for("index"))
 
 
+
+
+
+
+@app.route("/transform" , methods=["POST"])
+def transform() : 
+    userInfo = session.get("user_information",None)
+    print("userinfo -------->" , userInfo)
+    if userInfo is None :
+        raise AssertionError
+        
+    data = request.get_json()
+    # prompt  {'receiver_name': 'asd', 'amount': 'asd'} -> dict 
+    # make transition 
+    receiverName = data["receiver_name"]
+    amount = data["amount"]
+    connection 
+    with connection.cursor() as cursor : 
+        cursor.execute("SELECT id FROM users WHERE username=(%s)",(receiverName,))
+        receiverId = cursor.fetchone()
+        receiverId =receiverId["id"]
+        print(receiverId)
+        if receiverId == None :
+            # user cannot find 
+            return "can't"
+        #update money receiver and sender accounts
+        #update sender
+        cursor.execute("UPDATE account_info SET balance = balance - (%s) WHERE user_id = (%s)",(amount,userInfo["id"]))
+        #update receiver
+        cursor.execute("UPDATE account_info SET balance = balance + (%s) WHERE user_id = (%s)",(amount,receiverId))
+        #log the transformation 
+        cursor.execute("INSERT INTO transformation_log (receiver_user_id,sender_user_id,transform_time,amount) VALUES((%s),(%s),(%s),(%s))",(receiverId,userInfo["id"],datetime.now(),amount))
+    
+    connection.commit()
+    return "done"
+
+
+
+
+
+
 @app.route("/send_message", methods=["POST"])
 def sendMessage():
     
-    session['username'] = 'Arif'
+    session['username'] = 'Arif' # change
     prompt = request.get_json()
     message = prompt["message"]
 
     connection
     with connection.cursor() as cursor : 
-        cursor.execute("INSERT INTO messages (userid,content,role) VALUES (1,(%s),'user')",(message,))
-        cursor.execute('SELECT role,content FROM messages WHERE userid = ( SELECT id from users WHERE username=(%s))',(session['username'],))
+        cursor.execute("INSERT INTO messages (user_id,content,role) VALUES (1,(%s),'user')",(message,))
+        cursor.execute('SELECT role,content FROM messages WHERE user_id = ( SELECT id from users WHERE username=(%s))',(session['username'],))
         result = cursor.fetchall()
 
     data = {
@@ -124,9 +170,9 @@ def sendMessage():
     response = requests.post("http://localhost:11434/api/chat", json=data)
     with connection : 
         with connection.cursor as cursor :
-            cursor.execute('INSERT INTO messages (userid,content,role) VALUES (1,(%s),user)',(message,))
+            cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),user)',(message,))
             data = json.loads(response.text)
-            cursor.execute('INSERT INTO messages (userid,content,role) VALUES (1,(%s),asistant)',(data.message.content,))
+            cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),asistant)',(data.message.content,))
         connection.commit()
     rp = json.dumps(response.text)
     return rp
