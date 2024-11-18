@@ -15,7 +15,7 @@ app.secret_key = 'THIS_IS_BAD'
 
 connection = pymysql.connect(host='localhost',
                              user='root',
-                             password='Root',
+                             password='root',
                              database='aisec',
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
@@ -121,7 +121,7 @@ def sendMessage():
         "messages": result
     }
         
-    response = requests.post("http://localhost:11434/api/chat", json=data)
+    response = requests.post("http://192.168.159.44:11434/api/chat", json=data)
     with connection : 
         with connection.cursor as cursor :
             cursor.execute('INSERT INTO messages (userid,content,role) VALUES (1,(%s),user)',(message,))
