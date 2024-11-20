@@ -1,48 +1,81 @@
+from langchain_community.utilities import SQLDatabase
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
 from langchain_ollama.chat_models import ChatOllama
-from langchain_community.utilities.sql_database import SQLDatabase
-from sqlalchemy import create_engine
-from sqlalchemy.pool import NullPool
-from langchain import hub 
-from langgraph.prebuilt import create_react_agent
-from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 
-
-def get_engine_for_mysql_db():
-    MYSQL_USER = "root"
-    MYSQL_PASSWORD = "Root"
-    MYSQL_HOST = "localhost"
-    MYSQL_PORT = 3306
-    MYSQL_DB = "aisec"
-
-    engine = create_engine(
-        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}",
-        poolclass=NullPool,
-    )
-    return engine
 llm = ChatOllama(
-    model="llama3.1",
-    temperature=0,
-    # other params...
+    model="llama3.1:8b",
+    temperature=0.3
 )
 
-# Initialize MySQL database engine
-engine = get_engine_for_mysql_db()
+template = """
+based on table schema on below , write a SQL query that would answer the user's questions 
+{schema}
 
-# Create an SQLDatabase object for LangChain utilities
-db = SQLDatabase(engine)
-prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
-system_message = prompt_template.format(dialect="SQLite", top_k=5)
-toolkit = SQLDatabaseToolkit(db=db, llm=llm)
+question : {question}
+SQL Query: 
+"""
+prompt = ChatPromptTemplate.from_template(template)
+db_uri = "mysql+mysqlconnector://root:Root@localhost:3306/aisec"
 
-agent_executor = create_react_agent(
-    llm, toolkit.get_tools(), state_modifier=system_message
+db = SQLDatabase.from_uri(db_uri)
+
+# creating sqlchain 
+
+def get_schema(_):
+    return db.get_table_info()
+
+sql_chain = (
+    RunnablePassthrough.assign(schema = get_schema)
+    | prompt
+    | llm
+    | StrOutputParser()
+    
 )
+def get_info(query) : 
+    try : 
+        query = query.split("```sql")[1].split("```")[0]
+        print("---Query----------->" , query)
+        
+        return db.run(query)
+    except : 
+        third_template = """
+            based on query and database schema below find the sql syntax problems then only write fixed_query dont write any other things
+            schema : {schema}
+            query : {query} 
+            fixed_query :
+        """
+        third_prompt =  ChatPromptTemplate.from_template(third_template)
+        fixing_chain = (RunnablePassthrough.assign(schema = get_schema)
+            | third_prompt
+            | llm
+            | StrOutputParser()
+        ) 
+        fixed_query= fixing_chain.invoke({"query" : query})
+        print("------fixed_query-------->" , fixed_query)
+        return db.run(fixed_query)
 
-example_query = "Which country's customers spent the most?"
 
-events = agent_executor.stream(
-    {"messages": [("user", example_query)]},
-    stream_mode="values",
+second_template = """
+based on table schema , question and sql response  write natural language response. 
+{schema}
+question : {question}
+SQL Query: {query}
+SQL response : {response}
+
+natural language response : 
+
+"""
+second_prompt = ChatPromptTemplate.from_template(second_template)
+
+full_chain = (
+    RunnablePassthrough.assign(query=sql_chain).assign(
+        schema=get_schema,
+        response = lambda variables:get_info(variables["query"])
+    )
+    |second_prompt
+    |llm
+    |StrOutputParser()
 )
-for event in events:
-    event["messages"][-1].pretty_print()
+print(full_chain.invoke({"question":"my name is jack give me information about my transformations "}))

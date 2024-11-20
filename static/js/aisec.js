@@ -67,7 +67,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
                 console.log("fetching....")
                 if (response.ok) {
-                    const data = await response.json();
                     console.log("transition completed");
                     receiverInputField.value = ""
                     amountInputField.value = ""

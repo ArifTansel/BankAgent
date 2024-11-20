@@ -33,9 +33,15 @@ CREATE TABLE transformation_log(
 )
 
 --@block
-drop TABLE messages
+delete from messages
 
 --@block 
-INSERT INTO messages (userid,content,role) VALUES (1,'you are asisstant that translate messages to french','system')
+INSERT INTO messages (user_id,content,role) VALUES (1,'you are asisstant that translate messages to french','system')
 --@block 
 SELECT id FROM users WHERE username='Arif'
+
+--@block
+SELECT tl.receiver_user_id, u.username AS sender_username, tl.amount, tl.transform_time
+FROM transformation_log tl
+JOIN users u ON tl.sender_user_id = u.id
+WHERE u.username = "jack"

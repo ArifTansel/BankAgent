@@ -16,7 +16,7 @@ app.secret_key = 'THIS_IS_BAD'
 
 connection = pymysql.connect(host='localhost',
                              user='root',
-                             password='root',
+                             password='Root',
                              database='aisec',
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
@@ -141,7 +141,7 @@ def transform() :
         cursor.execute("INSERT INTO transformation_log (receiver_user_id,sender_user_id,transform_time,amount) VALUES((%s),(%s),(%s),(%s))",(receiverId,userInfo["id"],datetime.now(),amount))
     
     connection.commit()
-    return "done"
+    return "done" #return new balance 
 
 
 
@@ -169,7 +169,6 @@ def sendMessage():
     response = requests.post("http://localhost:11434/api/chat", json=data)
     connection 
     with connection.cursor() as cursor :
-        cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),(%s))',(message,"user"))
         data = json.loads(response.text)
         cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),(%s))',(data["message"]["content"],"assistant"))
     connection.commit()
