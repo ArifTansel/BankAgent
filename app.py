@@ -4,6 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 import json
 from datetime import datetime
+from sqlAgent import MySQLAgent
+
 app = Flask(__name__)
 
 #send message daki user id kısmını ayarla
@@ -153,28 +155,32 @@ def sendMessage():
     prompt = request.get_json()
     message = prompt["message"]
 
-    connection
-    with connection.cursor() as cursor : 
-        cursor.execute("INSERT INTO messages (user_id,content,role) VALUES (1,(%s),'user')",(message,))
-        cursor.execute('SELECT role,content FROM messages WHERE user_id = 1') # düzelt
-        result = cursor.fetchall()
-
-    data = {
-        "model": "llama3.1:8b",
-        "stream": False,
-        "messages": result
-    }  
-    print("----------------------->" ,data)
-        
-    response = requests.post("http://localhost:11434/api/chat", json=data)
-    connection 
-    with connection.cursor() as cursor :
-        data = json.loads(response.text)
-        cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),(%s))',(data["message"]["content"],"assistant"))
-    connection.commit()
-    rp = json.dumps(response.text)
+    agent = MySQLAgent()
     
+    rp = json.dumps(agent.ask_sql_agent(message))
     return rp
+    # connection
+    # with connection.cursor() as cursor : 
+    #     cursor.execute("INSERT INTO messages (user_id,content,role) VALUES (1,(%s),'user')",(message,))
+    #     cursor.execute('SELECT role,content FROM messages WHERE user_id = 1') # düzelt
+    #     result = cursor.fetchall()
+
+    # data = {
+    #     "model": "llama3.1:8b",
+    #     "stream": False,
+    #     "messages": result
+    # }  
+    # print("----------------------->" ,data)
+        
+    # response = requests.post("http://localhost:11434/api/chat", json=data)
+    # connection 
+    # with connection.cursor() as cursor :
+    #     data = json.loads(response.text)
+    #     cursor.execute('INSERT INTO messages (user_id,content,role) VALUES (1,(%s),(%s))',(data["message"]["content"],"assistant"))
+    # connection.commit()
+    # 
+    
+    # return rp
 
 @app.route("/logout")
 def logout():

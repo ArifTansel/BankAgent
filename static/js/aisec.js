@@ -4,17 +4,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function addMessage(role, message) {
         const messageElem = document.createElement("p");
-        messageElem.textContent = `${role}: ${message.content}`;
+        messageElem.textContent = `${role}: ${message}`;
         chatBox.appendChild(messageElem);
         chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
     }
 
     document.querySelector(".aibtn").addEventListener("click", async function () {
-        var userMessage = {
-            'content': ''
-        }
-        userMessage.content = inputField.value.trim();
-        if (!userMessage.content) return;
+        userMessage= inputField.value.trim();
+        if (!userMessage) return;
         addMessage("Kullanıcı", userMessage);
         inputField.value = "";
 
@@ -26,18 +23,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ message: userMessage.content })
+                body: JSON.stringify({ message: userMessage })
             });
-
             if (response.ok) {
                 const data = await response.json();
-                jsonData = JSON.parse(data)
-                addMessage("AI Asistan", jsonData.message);
+                addMessage("AI Asistan", data);
                 inputField.disabled = false;
             }
             else {
 
-                addMessage("AI Asistan", { 'content': 'mesaj alınamadı' });
+                addMessage("AI Asistan", 'mesaj alınamadı');
                 inputField.disabled = false;
             }
         } catch (error) {

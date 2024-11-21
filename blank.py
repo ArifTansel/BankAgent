@@ -1,42 +1,39 @@
-from langchain_ollama import ChatOllama
-from langchain_community.utilities.sql_database import SQLDatabase
-from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
-from langgraph.prebuilt import create_react_agent
-from langchain import hub
-from sqlalchemy import create_engine
-from sqlalchemy.pool import StaticPool
-def get_engine_for_mysql_db(): 
-    MYSQL_USER = "root"
-    MYSQL_PASSWORD = "Root"
-    MYSQL_HOST = "localhost"
-    MYSQL_PORT = 3306
-    MYSQL_DB = "aisec"
-    engine = create_engine(
-        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}",
-        poolclass=StaticPool,  # Avoid connection pooling in this simple example
-    )
-    return engine
-engine = get_engine_for_mysql_db()
-db = SQLDatabase(engine)
+
+
+from langchain_community.utilities import SQLDatabase
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_ollama.chat_models import ChatOllama
+
+
+
+
 
 llm = ChatOllama(
-    model="llama3.1:8b",
-    temperature=0,
-)
-toolkit = SQLDatabaseToolkit(db=db, llm=llm)
+        model="llama3.1:8b",
+        temperature=0.3
+    )
 
-prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
+db_uri = "mysql+mysqlconnector://root:Root@localhost:3306/aisec"
+db = SQLDatabase.from_uri(db_uri)        
+def get_schema(_):
+    return db.get_table_info()
 
-print(prompt_template.input_variables)
-system_message = prompt_template.format(dialect="MYSQL", top_k=5)
-agent_executor = create_react_agent(
-    llm, toolkit.get_tools(), state_modifier=system_message
-)
+template = """
+you are AI assistant that only can write yes or no 
+based on table schema on below , decide SQL query is neccessary or not 
+{schema}
+question : {question}
+if is neccessary only write : yes 
+if is not only write : no
+"""
+prompt = ChatPromptTemplate.from_template(template)
 
-example_query = "hello"
-events = agent_executor.stream(
-    {"messages": [("user", example_query)]},
-    stream_mode="values",
+sql_chain = (
+    RunnablePassthrough.assign(schema = get_schema)
+    | prompt
+    | llm
+    | StrOutputParser()
 )
-for event in events:
-    event["messages"][-1].pretty_print()
+print(sql_chain.invoke({"question":"how many users signed up "}))
