@@ -1,41 +1,13 @@
-
-document.addEventListener("DOMContentLoaded", function() {
-    const inputField = document.querySelector(".ai-input");
-    const chatBox = document.querySelector(".chat-box");
-
-    function addMessage(role, message) {
-        const messageElem = document.createElement("p");
-        messageElem.textContent = `${role}: ${message}`;
-        chatBox.appendChild(messageElem);
-        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+var stores = ["London","Paris","Milan"];
+var store = (new URLSearchParams(window.location.search)).get('storeId');
+document.write('<select name="storeId">');
+if(store) {
+    document.write('<option selected>'+store+'</option>');
+}
+for(var i=0;i<stores.length;i++) {
+    if(stores[i] === store) {
+        continue;
     }
-
-    document.querySelector(".aibtn").addEventListener("click", async function() {
-        const userMessage = inputField.value.trim();
-        if (!userMessage) return;
-        addMessage("Kullanıcı", userMessage);
-        inputField.value = "";
-
-        // API'ye mesaj gönder
-        try {
-            const response = await fetch("/send_message", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ message: userMessage })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                jsonData = JSON.parse(data)
-                addMessage("AI Asistan", jsonData.response);
-            } else {
-                addMessage("AI Asistan", "Yanıt alınamadı.");
-            }
-        } catch (error) {
-            console.error("Hata:", error);
-            addMessage("AI Asistan", "Bir hata oluştu.");
-        }
-    });
-});
+    document.write('<option>'+stores[i]+'</option>');
+}
+document.write('</select>');

@@ -15,10 +15,18 @@ app.secret_key = 'THIS_IS_BAD'
 
 @app.route("/")
 def index():
+    
+    userinformation = {
+
+    }
     username = session.get("username", None)
     error = session.get("is_error", False)
     is_used = session.get("is_used", False)
     is_wrong = session.get("is_wrong", False)
+    if username is not None :
+        #bilgileri çek : 
+        cursor = mysql.connection.cursor()
+        cursor.execute("")
     return render_template("index.html", username=username, is_error=error, is_used=is_used, is_wrong=is_wrong)
 
 
@@ -34,9 +42,11 @@ def signUp():
         cursor.execute("INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
                        (username, mail, hashed_password))
         mysql.connection.commit()
+        cursor.execute("INSERT INTO account_informations (user_id,balance) VALUES ((SELECT user_id FROM users WHERE username=(%s)),100) ",(username,))
+        mysql.connection.commit()
         cursor.close()
         session["is_used"] = False
-
+        return redirect(url_for("index"))
     except:
         session["is_used"] = True
         return redirect(url_for('index'))
