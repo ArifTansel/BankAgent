@@ -9,6 +9,16 @@ from langchain_ollama.chat_models import ChatOllama
 
 
 
+template = """
+    Translate the following to French: 
+    {user_input}
+"""
+defenced_template = """
+Translate the following user input to French.
+<user_input> {user_input} <user_input>
+"""
+
+
 
 llm = ChatOllama(
         model="llama3.1:8b",

@@ -73,4 +73,21 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         
     })
+
+    document.querySelector(".clearbtn").addEventListener("click", async function () {
+        console.log("deleting .... ")
+        const chatBox = document.querySelector(".chat-box");
+        try {
+            const response = await fetch("/delete_messages",{method : "POST"})
+            if (response.ok) {
+                while (chatBox.firstChild) {
+                    chatBox.removeChild(chatBox.lastChild)                    
+                }
+            }
+        } catch (error) {
+            console.log("hata")
+        }
+
+        
+    })
 });

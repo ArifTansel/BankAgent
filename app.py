@@ -7,8 +7,14 @@ from datetime import datetime
 from sqlAgent import MySQLAgent
 
 app = Flask(__name__)
+#missions : 
+# send message daki user id kısmını ayarla
+# llm modeline isim bilgisini seessiondan alıp gönder 
+# chati temizleme butonu ekle
+# mesajları userid ye göre ver 
 
-#send message daki user id kısmını ayarla
+
+
 #connection
 #     with connection.cursor() as cursor:
 #             sql = "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)"
@@ -154,10 +160,11 @@ def transform() :
 def sendMessage():
     prompt = request.get_json()
     message = prompt["message"]
+    user_info = session.get("user_information",None)
 
     agent = MySQLAgent()
     
-    rp = json.dumps(agent.ask_sql_agent(message))
+    rp = json.dumps(agent.ask_sql_agent(message,user_info))
     return rp
     # connection
     # with connection.cursor() as cursor : 
@@ -181,7 +188,13 @@ def sendMessage():
     # 
     
     # return rp
-
+@app.route("/delete_messages",methods=["POST"])
+def delete() :
+    connection
+    with connection.cursor() as cursor : 
+        cursor.execute("DELETE FROM messages ")
+    connection.commit()
+    return "asd"
 @app.route("/logout")
 def logout():
     session["username"] = None 
