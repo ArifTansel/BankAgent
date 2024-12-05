@@ -44,7 +44,7 @@
             <li class="nav-item " data-bs-toggle="offcanvas"  data-bs-target="#aicanvas" role="button" aria-controls="offcanvasExample">
                 <a class="nav-link text-dark " aria-current="page" href="#">AI Asistant</a>
             </li>
-          {%if username == None %}
+          {%if user_info == None %}
 
             <li class="nav-item " data-bs-toggle="offcanvas"  data-bs-target="#logincanvas" role="button" aria-controls="offcanvasExample">
                 <a class="nav-link " aria-current="page" href="#">Giriş Yap</a>
@@ -130,17 +130,7 @@
         <div class="offcanvas-body">
             <div class="chat-box" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
               </div>
- 
-
             <div class="input-group mb-2">
-                <span class="input-group-text" id="basic-addon1"><button  type="button" class="btn"> 
-                    <img
-                    src="/static/icons/link.svg"
-                    width="20"
-                    height="20"
-                  />
-                </button>
-                </span>
                 <input type="text" class="form-control ai-input " placeholder="" aria-label="Username" aria-describedby="basic-addon1">
                 <button class="btn btn-outline-secondary aibtn" type="submit  " id="button-addon2">
                   <img
@@ -150,17 +140,18 @@
                   />
                 </button>
               </div>
-
-
+              <button class="btn btn-outline-secondary clearbtn" type="submit  " id="button-addon2">
+                Delete Chat History
+              </button>
         </div>
       </div>
 
   <!-- Profile bilgileri -->
-  {%if username %}
+  {%if user_info !=None %}
     <div>
      <img src="/static/icons/dollar-sign.svg" class="rounded mx-auto d-block" alt="..." width="50" height="50">
      <br>
-     <p class="text-center">Merhaba : {{username|title}}</p>
+     <p class="text-center">Merhaba : {{user_info["username"]|title}}</p>
     </div>
     <div class="container-sm w-25 p-3 ">
      <table class="table">
@@ -172,7 +163,7 @@
         </thead>
         <tbody>
             <tr>
-                <th scope="col" class=" text-center">Bakiye :</th>
+                <th scope="col" class=" text-center">Bakiye : {{account_info["balance"]}} </th>
                 <th scope="col" class=" text-center"></th>
             </tr>
             <tr>
@@ -182,13 +173,26 @@
       </table>
     </div>
 
+
+   <!-- Transmission canvas  -->
     <div class="offcanvas offcanvas-top" tabindex="-1" id="havalecanvas" aria-labelledby="offcanvasTopLabel">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="offcanvasTopLabel">Offcanvas top</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
-        ...
+      <div class="row">
+        <div class="input-group mb-3 col">
+          <input type="text" id="receiver_name" class="form-control" placeholder="Receiver's username" aria-label="Receiver's username" aria-describedby="basic-addon2">
+        </div>
+        <div class="input-group mb-3 col">
+          <input type="text" id="amount" class="form-control" placeholder="Amount " aria-label="Amount" aria-describedby="basic-addon2">
+        </div>
+      </div>
+      <div class="text-center">
+        <button type="button" id="transmission_submit" class="btn btn-outline-dark  ">Dark</button>
+      </div>
+      
     </div>
     {%else%}
     <p>Lütfen Giriş Yapınız </p>
